@@ -1,4 +1,4 @@
-[![Docker Pulls](https://badgen.net/docker/pulls/pomlo/postgresql-s3-backup?icon=docker&label=pulls&cache=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags) [![Docker Image Size](https://badgen.net/docker/size/pomlo/postgresql-s3-backup/latest?icon=docker&label=image%20size&cache=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags) [![Docker build](https://img.shields.io/badge/automated-automated?style=flat&logo=docker&logoColor=blue&label=build&color=green&cacheSeconds=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags) [![Docker Stars](https://badgen.net/docker/stars/dpomlo/postgresql-s3-backup?icon=docker&label=stars&color=green&cache=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup) [![Github Stars](https://img.shields.io/github/stars/Pomlo/postgresql-s3-backup?label=stars&logo=github&color=green&style=flat&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup) [![Github forks](https://img.shields.io/github/forks/Pomlo/postgresql-s3-backup?logo=github&style=flat&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup/fork) [![Github open issues](https://img.shields.io/github/issues-raw/Pomlo/postgresql-s3-backup?logo=github&color=yellow&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup/issues) [![Github closed issues](https://img.shields.io/github/issues-closed-raw/Pomlo/postgresql-s3-backup?logo=github&color=green&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup/issues?q=is%3Aissue+is%3Aclosed) [![GitHub license](https://img.shields.io/github/license/Pomlo/postgresql-s3-backup)](https://github.com/Pomlo/postgresql-s3-backup/blob/master/LICENSE)
+[![Docker Pulls](https://badgen.net/docker/pulls/pomlo/postgresql-s3-backup?icon=docker&label=pulls&cache=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags) [![Docker Image Size](https://badgen.net/docker/size/pomlo/postgresql-s3-backup/latest?icon=docker&label=image%20size&cache=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags) [![Docker build](https://img.shields.io/badge/automated-automated?style=flat&logo=docker&logoColor=blue&label=build&color=green&cacheSeconds=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags) [![Docker Stars](https://badgen.net/docker/stars/pomlo/postgresql-s3-backup?icon=docker&label=stars&color=green&cache=600)](https://hub.docker.com/r/pomlo/postgresql-s3-backup) [![Github Stars](https://img.shields.io/github/stars/Pomlo/postgresql-s3-backup?label=stars&logo=github&color=green&style=flat&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup) [![Github forks](https://img.shields.io/github/forks/Pomlo/postgresql-s3-backup?logo=github&style=flat&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup/fork) [![Github open issues](https://img.shields.io/github/issues-raw/Pomlo/postgresql-s3-backup?logo=github&color=yellow&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup/issues) [![Github closed issues](https://img.shields.io/github/issues-closed-raw/Pomlo/postgresql-s3-backup?logo=github&color=green&cacheSeconds=600)](https://github.com/Pomlo/postgresql-s3-backup/issues?q=is%3Aissue+is%3Aclosed) [![GitHub license](https://img.shields.io/github/license/Pomlo/postgresql-s3-backup)](https://github.com/Pomlo/postgresql-s3-backup/blob/master/LICENSE)
 
 
 # postgresql-s3-backup
@@ -10,7 +10,7 @@ Useful with **any S3 compatible** object storage system to store your databases 
 
 The PostgreSQL client works with **any PostgreSQL-17 compatible database** ...
 
-This container has a shell for entry point so that it can be **used to combine mysqldump and s3cmd commands** easily.
+This container has a shell for entry point so that it can be **used to combine pg_dump and s3cmd commands** easily.
 
 ## Docker image
 [![Docker Image Size](https://badgen.net/docker/size/pomlo/postgresql-s3-backup/latest?icon=docker&label=compressed%20size)](https://hub.docker.com/r/pomlo/postgresql-s3-backup/tags)
@@ -51,7 +51,7 @@ $ docker pull pomlo/postgresql-s3-backup:latest
 ## Basic usage
 
 ```sh
-docker run --rm -v $(pwd):/s3 -v $HOME/.s3:/root pomlo/postgresql-s3-backup sh -c 'pg_dump -h ${PGSQL_HOST:localhost} -u ${PGSQL_USER:postgres} --password=${PGSQL_PASSWORD:your_password} ${DATABASE_NAME:postgres}> "$(date +%F_%H)_${DATABASE_NAME:postgres}_pgsqldump.sql" && s3cmd put --ssl  . s3://${BUCKET_NAME}'
+docker run --rm -v $(pwd):/s3 -v $HOME/.s3:/root pomlo/postgresql-s3-backup sh -c 'PGPASSWORD="${PGSQL_PASSWORD:your_password}" pg_dump -h ${PGSQL_HOST:localhost} -U ${PGSQL_USER:postgres} -d ${DATABASE_NAME:postgres}-f  "$(date +%F_%H)_${DATABASE_NAME:postgres}_pgsqldump.sql" && s3cmd put --ssl  . s3://${BUCKET_NAME}'
 ```
 The first volume is using your current directory as workdir(permit to keep a version of your dump locally or to backup a local file as well) and the second volume is used for the configuration of your S3 connection.
 
@@ -83,7 +83,7 @@ A configmap can easily be created from the .s3cfg config file with the following
 kubectl create configmap s3config --from-file $HOME/.s3
 ```
 It is suggested to store your database credential into a K8s secret as a good practice.
-Then, once configured with your data volume/path and your bucket (by completing the file or defining the ENV variables: YOUR_KMS_KEY_ID, YOUR_BUCKET_NAME, MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD/secret, DATABASE_NAMES), the k8s CRONJOB can be created from the file:
+Then, once configured with your data volume/path and your bucket (by completing the file or defining the ENV variables: YOUR_KMS_KEY_ID, YOUR_BUCKET_NAME, PGSQL_HOST, PGSQL_USER, PGSQL_PASSWORD/secret, DATABASE_NAME), the k8s CRONJOB can be created from the file:
 ```sh
 kubectl create -f s3-dump-cronjob.yaml
 ```

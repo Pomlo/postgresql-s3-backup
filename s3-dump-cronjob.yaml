@@ -13,11 +13,11 @@ spec:
         spec:
           containers:
           - name: pgsqldump-s3-backup
-            image: d3fk/posgresql-s3-backup:latest
+            image: pomlo/postgresql-s3-backup:latest
             args:
             - sh
             - -c
-            - pg_dump -u ${MYSQL_USER} -h ${MYSQL_HOST} --password=${MYSQL_PASSWORD} --databases ${DATABASES} > /tmp/dump/databasebackup.sql && s3cmd put --ssl --server-side-encryption --server-side-encryption-kms-id=${YOUR_KMS_KEY_ID} /tmp/dump/databasebackup.sql s3://${YOUR_BUCKET_NAME}/DB/
+            - PGPASSWORD="${PGSQL_PASSWORD}" pg_dump -h ${PGSQL_HOST} -U ${PGSQL_USER} -d ${DATABASE_NAME} -f /tmp/dump/databasebackup.sql && s3cmd put --ssl --server-side-encryption --server-side-encryption-kms-id=${YOUR_KMS_KEY_ID} /tmp/dump/databasebackup.sql s3://${YOUR_BUCKET_NAME}/DB/
             volumeMounts:
             - name: tmp-volume
               mountPath: /tmp/dump/
