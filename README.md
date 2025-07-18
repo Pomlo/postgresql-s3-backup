@@ -51,9 +51,11 @@ $ docker pull pomlo/postgresql-s3-backup:latest
 ## Basic usage
 
 ```sh
-docker run --rm -v $(pwd):/s3 -v $HOME/.s3:/root pomlo/postgresql-s3-backup sh -c 'PGPASSWORD="${PGSQL_PASSWORD:your_password}" pg_dump -h ${PGSQL_HOST:localhost} -U ${PGSQL_USER:postgres} -d ${DATABASE_NAME:postgres}-f  "$(date +%F_%H)_${DATABASE_NAME:postgres}_pgsqldump.sql" && s3cmd put --ssl  . s3://${BUCKET_NAME}'
+docker run --rm -v $(pwd):/s3 -v $HOME/.s3:/root pomlo/postgresql-s3-backup sh -c 'export DATE=$(date +%F_%H%M%S) && PGPASSWORD="${PGSQL_PASSWORD:your_password}" pg_dump -h ${PGSQL_HOST:localhost} -U ${PGSQL_USER:postgres} -d ${DATABASE_NAME} -f  "${DATE}_${DATABASE_NAME}_pgsqldump.sql" && s3cmd put --ssl ${DATE}_${DATABASE_NAME}_pgsqldump.sql s3://${BUCKET_NAME}'
 ```
-The first volume is using your current directory as workdir(permit to keep a version of your dump locally or to backup a local file as well) and the second volume is used for the configuration of your S3 connection.
+The first volume is using your current directory as workdir(permit to keep a version of your dump locally) and the second volume is used for the configuration of your S3 connection.
+
+Please reffer to pg_dump and s3cmd documentations to adapt options to your needs.
 
 ## s3cmd settings
 
